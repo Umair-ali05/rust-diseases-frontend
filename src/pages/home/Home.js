@@ -1,15 +1,13 @@
 import './home.css';
-import { IoIosAddCircleOutline } from 'react-icons/io';
 import { useState } from 'react';
 import axios from 'axios';
 
 export const Home = () => {
   const [model, setModel] = useState();
-  const [file, setFile] = useState(null);
+  const [image, setImage] = useState(null);
 
   const addPost = async (data) => {
     try {
-      console.log(data);
       const res = await axios.post(
         'http://localhost:30000/api/category',
         data,
@@ -24,13 +22,23 @@ export const Home = () => {
     }
   };
 
+  const handleImageUpload = (event) => {
+    const uploadedImage = event.target.files[0];
+    setImage(URL.createObjectURL(uploadedImage));
+  };
+
+  const handleClick = () => {
+    document.getElementById('image-upload').click();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const data = new FormData();
-    data.append('image', file);
+    data.append('image', image);
     data.append('model', model);
 
+    console.log(data);
     addPost(data);
   };
 
@@ -57,37 +65,37 @@ export const Home = () => {
             </option>
           </select>
         </div>
-
-        <div className='container boxItems'>
-          <div className='img '>
-            {file && (
+        <form onSubmit={handleSubmit}>
+          <div
+            style={{
+              width: '200px',
+              height: '200px',
+              backgroundColor: 'grey',
+              cursor: 'pointer',
+            }}
+            onClick={handleClick}
+          >
+            {image ? (
               <img
-                src={URL.createObjectURL(file)}
-                alt='images'
+                src={image}
+                alt='uploaded image'
+                style={{ width: '100%', height: '100%' }}
               />
+            ) : (
+              <p style={{ textAlign: 'center', lineHeight: '100px' }}>
+                Click to upload image
+              </p>
             )}
           </div>
-          <form onSubmit={handleSubmit}>
-            <div className='inputfile flexCenter'>
-              <div className='upload-file'>
-                <p>Upload Picture</p>
-                <label htmlFor='inputfile'>
-                  <IoIosAddCircleOutline />
-                </label>
-              </div>
-              <input
-                type='file'
-                id='inputfile'
-                style={{ display: 'none' }}
-                onChange={(e) => {
-                  setFile(e.target.files[0]);
-                }}
-              />
-            </div>
-
-            <button className='button post-btn'>Start process</button>
-          </form>
-        </div>
+          <input
+            type='file'
+            accept='image/*'
+            id='image-upload'
+            onChange={handleImageUpload}
+            style={{ display: 'none' }}
+          />
+          <button className='button post-btn'>Start process</button>
+        </form>
       </section>
     </>
   );
