@@ -50,7 +50,7 @@ export const Home = () => {
             value={''}
             onChange={(e) => setModel(e.target.value)}
           >
-            <option>Select Model</option>
+            <option>Please Select a Model fron Dropdown</option>
             <option
               key={1234}
               value='wheat'
