@@ -1,13 +1,35 @@
 import './home.css';
 import { useState, useEffect } from 'react';
-import * as tf from '@tensorflow/tfjs';
+// import * as tf from '@tensorflow/tfjs';
+import utils from '../../utils/utils';
+import axios from 'axios';
 
 export const Home = () => {
   const [model, setModel] = useState();
-  const [tfModel, setTfModel] = useState();
   const [image, setImage] = useState(null);
-  const [imageData, setImageData] = useState(null);
 
+  const uploadImage = async (data) => {
+    try {
+      const res = await axios.post(
+        'http://localhost:303/api/process-image',
+        data
+      );
+      console.log(res);
+      if (res.data.post.success) {
+        utils.successToastMessage(res.data.post.message);
+      } else {
+        utils.errorToastMessage(res.data.post.message);
+      }
+
+      // window.location.replace('/post/' + res.data._id);
+    } catch (error) {
+      if (error.response.data)
+        utils.errorToastMessage(error.response.data.err.message);
+      else {
+        utils.errorToastMessage(error.message);
+      }
+    }
+  };
   // const loadModel = async (file) => {
   //   const absolutePath = path.resolve(file);
   //   console.log(absolutePath);
@@ -15,29 +37,29 @@ export const Home = () => {
   //   return model;
   // };
 
-  useEffect(() => {
-    const loadModel = async () => {
-      console.log('here');
-      const model = await tf.loadLayersModel('/public/tfjs/model.json');
+  // useEffect(() => {
+  //   const loadModel = async () => {
+  //     console.log('here');
+  //     const model = await tf.loadLayersModel('/public/tfjs/model.json');
 
-      // const inputTensor = tf.tensor2d([[1, 2, 3, 4]], [1, 4]);
-      // const prediction = model.predict(inputTensor);
-      setTfModel(model);
-    };
+  //     // const inputTensor = tf.tensor2d([[1, 2, 3, 4]], [1, 4]);
+  //     // const prediction = model.predict(inputTensor);
+  //     setTfModel(model);
+  //   };
 
-    loadModel();
-  }, []);
+  //   loadModel();
+  // }, []);
 
-  const readImage = (image) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(image);
-    });
-  };
+  // const readImage = (image) => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       resolve(reader.result);
+  //     };
+  //     reader.onerror = () => reject(reader.error);
+  //     reader.readAsDataURL(image);
+  //   });
+  // };
 
   const handleClick = () => {
     document.getElementById('image-upload').click();
@@ -46,23 +68,10 @@ export const Home = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const imageData = await readImage(image);
-    setImageData(imageData);
-
-    const tensor = tf.browser.fromPixels(imageData);
-
-    const prediction = model.predict(tensor);
-
-    // Do something with the prediction results
-    console.log(prediction.dataSync());
-
-    // Cleanup the tensors if necessary
-    tf.dispose(tensor);
-    tf.dispose(prediction);
-
     const data = new FormData();
     data.append('image', image);
     data.append('model', model);
+    uploadImage(data);
   };
   return (
     <>
